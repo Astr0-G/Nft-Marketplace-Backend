@@ -1,6 +1,6 @@
 const { frontEndContractsFile, frontEndAbiFile } = require("../helper-hardhat-config")
 const fs = require("fs")
-const { network } = require("hardhat")
+const { network, ethers } = require("hardhat")
 
 module.exports = async () => {
   if (process.env.UPDATE_FRONT_END) {
@@ -10,10 +10,12 @@ module.exports = async () => {
     console.log("Front end written!")
   }
 }
-
+const frontEndNFTAbiFile = "C:/Users/Administrator/Desktop/NFT MARKET/nft-marketplace-frontend/contants/nftabi.json"
 async function updateAbi() {
   const NftMarketplace = await ethers.getContract("NftMarketplace")
   fs.writeFileSync(frontEndAbiFile, NftMarketplace.interface.format(ethers.utils.FormatTypes.json))
+  const basicNft = await ethers.getContract("BasicNFT")
+  fs.writeFileSync(frontEndNFTAbiFile, basicNft.interface.format(ethers.utils.FormatTypes.json))
 }
 
 async function updateContractAddresses() {

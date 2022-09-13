@@ -5,7 +5,7 @@ const { developmentChains } = require("../../helper-hardhat-config")
 !developmentChains.includes(network.name)
   ? describe.skip
   : describe("nft marketplace test", function () {
-      let nftmarketplace, deployer, player
+      let nftmarketplace, deployer, player1, player2
       const PRICE = ethers.utils.parseEther("0.1")
       const Token_ID = 0
       beforeEach(async () => {

@@ -56,11 +56,13 @@ const networkConfig = {
 const developmentChains = ["hardhat", "localhost"]
 const DECIMALS = 8
 const INITIAL_ANSWER = 20000000000
-const frontEndContractsFile = "../nextjs-smartcontract-lottery-fcc/constants/contractAddresses.json"
-const frontEndAbiFile = "../nextjs-smartcontract-lottery-fcc/constants/abi.json"
+const frontEndContractsFile = "C:/Users/Administrator/Desktop/NFT MARKET/nft-marketplace-frontend/contants/contractAddresses.json"
+const frontEndAbiFile = "C:/Users/Administrator/Desktop/NFT MARKET/nft-marketplace-frontend/contants/abi.json"
 module.exports = {
   networkConfig,
   developmentChains,
   DECIMALS,
   INITIAL_ANSWER,
+  frontEndAbiFile,
+  frontEndContractsFile
 }
