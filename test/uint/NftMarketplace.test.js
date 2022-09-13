@@ -48,8 +48,26 @@ const { developmentChains } = require("../../helper-hardhat-config")
           await playerConnectedNftMarketplace.buyItem(basicNft.address, Token_ID, { value: PRICE })
           const proceedgot = await nftmarketplace.getProceeds(deployer)
           assert(proceedgot.toString() == PRICE)
+          await expect(
+            nftmarketplace.connect(player1).listItem(basicNft.address, Token_ID, 0)
+          ).to.be.revertedWith("NftMarketplace__PriceMustNotBeZero")
+          await expect(
+            nftmarketplace.connect(player1).listItem(basicNft.address, Token_ID, PRICE)
+          ).to.be.revertedWith("NftMarketplace__NotApprovedForMarketplace")
+
+          await expect(
+            nftmarketplace.connect(player1).cancelListing(basicNft.address, Token_ID)
+          ).to.be.revertedWith("NftMarketplace__NotListed")
+
           await basicNft.connect(player1).approve(nftmarketplace.address, Token_ID)
+
+          await expect(
+            nftmarketplace.connect(player2).listItem(basicNft.address, Token_ID, PRICE)
+          ).to.be.revertedWith("NftMarketplace__NotOwner")
           await nftmarketplace.connect(player1).listItem(basicNft.address, Token_ID, PRICE)
+          await expect(
+            nftmarketplace.connect(player1).listItem(basicNft.address, Token_ID, PRICE)
+          ).to.be.revertedWith("NftMarketplace__AlreadyListed")
           const listing = await nftmarketplace.getListing(basicNft.address, Token_ID)
           assert(listing.toString() == `${PRICE},${player1.address}`)
         })
@@ -76,25 +94,39 @@ const { developmentChains } = require("../../helper-hardhat-config")
           await nftmarketplace.listItem(basicNft.address, Token_ID, PRICE)
           const listing = await nftmarketplace.getListing(basicNft.address, Token_ID)
           assert(listing.toString() == `${PRICE},${deployer}`)
-          await nftmarketplace.updateListing(basicNft.address, Token_ID, PRICE+PRICE)
-          await expect(nftmarketplace.updateListing(basicNft.address, Token_ID, PRICE+PRICE)).to.emit(
-            nftmarketplace,
-            "ItemListed")
+          await expect(
+            nftmarketplace.updateListing(basicNft.address, Token_ID, 0)
+          ).to.be.revertedWith("NftMarketplace__PriceMustNotBeZero")
+          await nftmarketplace.updateListing(basicNft.address, Token_ID, PRICE + PRICE)
+          await expect(
+            nftmarketplace.updateListing(basicNft.address, Token_ID, PRICE + PRICE)
+          ).to.emit(nftmarketplace, "ItemListed")
           const listingNOW = await nftmarketplace.getListing(basicNft.address, Token_ID)
-          assert(listingNOW.toString() == `${PRICE+PRICE},${deployer}`)
+          assert(listingNOW.toString() == `${PRICE + PRICE},${deployer}`)
         })
         it("buying item with less money revert error message and buyting item with more money will go through", async () => {
           const WRONGPRICE = ethers.utils.parseEther("0.01")
           await nftmarketplace.listItem(basicNft.address, Token_ID, PRICE)
           const playerConnectedNftMarketplace = nftmarketplace.connect(player1)
           // const buying1 = await playerConnectedNftMarketplace.buyItem(basicNft.address, Token_ID, { value: WRONGPRICE })
-          await expect(playerConnectedNftMarketplace.buyItem(basicNft.address, Token_ID, { value: WRONGPRICE })).to.be.revertedWith(
-            "NftMarketplace__PriceNotMet"
-          )
+          await expect(
+            playerConnectedNftMarketplace.buyItem(basicNft.address, Token_ID, { value: WRONGPRICE })
+          ).to.be.revertedWith("NftMarketplace__PriceNotMet")
           // const buying2 = await playerConnectedNftMarketplace.buyItem(basicNft.address, Token_ID, { value: PRICE })
-          await expect(playerConnectedNftMarketplace.buyItem(basicNft.address, Token_ID, { value: PRICE })).to.emit(
+          await expect(
+            playerConnectedNftMarketplace.buyItem(basicNft.address, Token_ID, { value: PRICE })
+          ).to.emit(nftmarketplace, "ItemBought")
+        })
+        it("cancel listing", async () => {
+          await nftmarketplace.listItem(basicNft.address, Token_ID, PRICE)
+          const listing = await nftmarketplace.getListing(basicNft.address, Token_ID)
+          assert(listing.toString() == `${PRICE},${deployer}`)
+          await expect(nftmarketplace.cancelListing(basicNft.address, Token_ID)).to.emit(
             nftmarketplace,
-            "ItemBought")
+            "ItemCanceled"
+          )
+          const listingNow = await nftmarketplace.getListing(basicNft.address, Token_ID)
+          assert(listingNow.toString() == `0,0x0000000000000000000000000000000000000000`)
         })
       })
     })
